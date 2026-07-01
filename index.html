@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0ea5e9" />
+  <meta name="description" content="Quiz PWA de Contabilidade Financeira - Aulas 4, 5 e 6." />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <title>M&S | Quiz Contabilidade Financeira</title>
+  <style>
+    :root {
+      --bg: #eef6ff;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --text: #0f172a;
+      --muted: #64748b;
+      --brand: #0284c7;
+      --brand-2: #0ea5e9;
+      --ok: #15803d;
+      --bad: #b91c1c;
+      --warn: #f59e0b;
+      --ring: rgba(14,165,233,.22);
+      --shadow: 0 18px 45px rgba(15, 23, 42, .12);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top left, #dff5ff 0, transparent 32rem), linear-gradient(135deg, #f8fbff 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+    button { font: inherit; }
+    .shell { width: min(1180px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 60px; }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0f172a 0%, #075985 55%, #0ea5e9 100%);
+      border-radius: 30px;
+      color: white;
+      padding: clamp(22px, 4vw, 42px);
+      box-shadow: var(--shadow);
+      min-height: 210px;
+    }
+    .hero:after {
+      content: "";
+      position: absolute;
+      inset: auto -8% -55% 45%;
+      height: 260px;
+      background: rgba(255,255,255,.13);
+      transform: rotate(-13deg);
+      border-radius: 42px;
+    }
+    .brandline { display: flex; gap: 14px; align-items: center; position: relative; z-index: 1; }
+    .logo {
+      width: 58px; height: 58px; border-radius: 18px;
+      display: grid; place-items: center;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.25);
+      font-weight: 900; letter-spacing: -.04em;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+    }
+    h1 { margin: 18px 0 8px; font-size: clamp(1.65rem, 4vw, 3rem); line-height: 1.05; position: relative; z-index: 1; }
+    .subtitle { max-width: 760px; color: rgba(255,255,255,.88); margin: 0; line-height: 1.65; position: relative; z-index: 1; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 18px 0; }
+    .stat { background: rgba(255,255,255,.72); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.7); border-radius: var(--radius); padding: 16px; box-shadow: 0 8px 22px rgba(2,132,199,.08); }
+    .stat strong { display: block; font-size: 1.35rem; }
+    .stat span { color: var(--muted); font-size: .9rem; }
+    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 18px 0; position: sticky; top: 0; z-index: 5; padding: 10px 0; background: linear-gradient(180deg, rgba(238,246,255,.96), rgba(238,246,255,.75)); backdrop-filter: blur(10px); }
+    .tab {
+      border: 0; padding: 14px 12px; border-radius: 16px; cursor: pointer;
+      color: #075985; background: var(--surface); box-shadow: 0 8px 20px rgba(15,23,42,.08);
+      font-weight: 800; display: flex; justify-content: center; align-items: center; gap: 8px;
+    }
+    .tab.active { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: white; }
+    .card { background: rgba(255,255,255,.92); border: 1px solid rgba(148,163,184,.24); border-radius: var(--radius); box-shadow: var(--shadow); padding: clamp(16px, 3vw, 26px); }
+    .lesson-head { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 18px; }
+    .lesson-head h2 { margin: 0 0 6px; font-size: clamp(1.35rem, 3vw, 2rem); }
+    .pillrow { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill { display: inline-flex; gap: 6px; align-items: center; border-radius: 999px; background: #e0f2fe; color: #075985; padding: 7px 10px; font-size: .86rem; font-weight: 800; }
+    .progress-wrap { min-width: min(360px, 100%); }
+    .progress-top { display: flex; justify-content: space-between; color: var(--muted); font-size: .92rem; margin-bottom: 8px; }
+    .bar { height: 12px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+    .bar > span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--brand), var(--ok)); transition: width .25s ease; }
+    .questions { display: grid; gap: 16px; margin-top: 18px; }
+    .question { border: 1px solid #e2e8f0; border-radius: 20px; background: var(--surface); padding: 18px; }
+    .qtop { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .qtitle { margin: 0; font-weight: 800; line-height: 1.45; }
+    .badge { white-space: nowrap; padding: 6px 9px; border-radius: 999px; font-size: .78rem; font-weight: 900; background: #fef3c7; color: #92400e; }
+    .badge.medium { background: #dbeafe; color: #1d4ed8; }
+    .answers { display: grid; gap: 9px; }
+    .answer { width: 100%; text-align: left; border: 1px solid #dbe3ee; background: #f8fafc; color: var(--text); padding: 12px 13px; border-radius: 14px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; }
+    .answer:hover { border-color: #7dd3fc; box-shadow: 0 0 0 4px var(--ring); }
+    .answer.selected { background: #e0f2fe; border-color: #0ea5e9; font-weight: 800; }
+    .letter { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 10px; background: white; display: grid; place-items: center; font-weight: 900; color: #075985; }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 18px; }
+    .primary, .ghost { border: 0; border-radius: 14px; padding: 12px 16px; cursor: pointer; font-weight: 900; }
+    .primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: white; }
+    .primary:disabled { background: #94a3b8; cursor: not-allowed; }
+    .ghost { background: #e2e8f0; color: #334155; }
+    .result { margin-top: 20px; border-radius: 22px; padding: 18px; background: linear-gradient(135deg, #f0fdf4, #eff6ff); border: 1px solid #bae6fd; }
+    .score { font-size: clamp(1.4rem, 4vw, 2.3rem); font-weight: 950; margin: 0 0 4px; }
+    .review { margin-top: 14px; display: grid; gap: 10px; }
+    .review-item { padding: 12px; border-radius: 14px; background: white; border-left: 5px solid var(--bad); }
+    .review-item.ok { border-left-color: var(--ok); }
+    .muted { color: var(--muted); }
+    .install-chip {
+      position: fixed; right: 16px; bottom: 16px; z-index: 20;
+      border: 0; border-radius: 999px; padding: 10px 14px 10px 10px;
+      background: #0f172a; color: white; display: flex; align-items: center; gap: 9px;
+      box-shadow: 0 18px 35px rgba(15,23,42,.28); cursor: pointer; font-weight: 900;
+    }
+    .mini-logo { width: 34px; height: 34px; border-radius: 12px; display: grid; place-items: center; background: linear-gradient(135deg, #0284c7, #0ea5e9); font-size: .82rem; letter-spacing: -.04em; }
+    .install-chip[hidden] { display: none; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,.55); display: none; place-items: center; padding: 18px; z-index: 30; }
+    .modal-backdrop.show { display: grid; }
+    .modal { width: min(520px, 100%); background: white; border-radius: 24px; padding: 22px; box-shadow: var(--shadow); }
+    .modal h3 { margin: 0 0 10px; }
+    .modal ol { line-height: 1.7; }
+    .footer { text-align: center; color: var(--muted); margin-top: 22px; font-size: .9rem; }
+    @media (max-width: 780px) {
+      .stats { grid-template-columns: 1fr; }
+      .tabs { grid-template-columns: 1fr; position: static; }
+      .lesson-head { flex-direction: column; }
+      .qtop { flex-direction: column; }
+      .badge { white-space: normal; }
+      .install-chip { right: 10px; left: 10px; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <button id="installBtn" class="install-chip" aria-label="Instalar aplicativo M&S">
+    <span class="mini-logo">M&S</span><span>Instalar</span>
+  </button>
+
+  <div class="modal-backdrop" id="installHelp" role="dialog" aria-modal="true" aria-labelledby="installTitle">
+    <div class="modal">
+      <h3 id="installTitle">Instalar no Android</h3>
+      <p class="muted">Se o botão de instalação automática ainda não aparecer no navegador, use o menu do Chrome.</p>
+      <ol>
+        <li>Abra esta página no Chrome do Android.</li>
+        <li>Toque nos três pontos do navegador.</li>
+        <li>Escolha <strong>Instalar app</strong> ou <strong>Adicionar à tela inicial</strong>.</li>
+      </ol>
+      <button class="primary" id="closeInstallHelp">Entendi</button>
+    </div>
+  </div>
+
+  <div class="shell">
+    <section class="hero">
+      <div class="brandline"><div class="logo">M&S</div><strong>Quiz PWA</strong></div>
+      <h1>Contabilidade Financeira</h1>
+      <p class="subtitle">Página responsiva com 3 abas: Aula 4, Aula 5 e Aula 6. Cada aula possui 50 questões, sendo 25 médias e 25 difíceis, com 4 alternativas por questão. O resultado aparece após responder todas.</p>
+    </section>
+
+    <section class="stats" aria-label="Resumo do quiz">
+      <div class="stat"><strong>150</strong><span>questões no total</span></div>
+      <div class="stat"><strong>3</strong><span>abas por aula</span></div>
+      <div class="stat"><strong>PWA</strong><span>instalável no Android</span></div>
+    </section>
+
+    <nav class="tabs" id="tabs" aria-label="Abas de aulas"></nav>
+    <main id="quizArea" class="card"></main>
+    <p class="footer">M&S · Baseado no plano de ensino e nos materiais das aulas 4, 5 e 6 de Contabilidade Financeira.</p>
+  </div>
+
+  <script>
+    const QUIZZES = {"aula4": [{"difficulty": "médio", "q": "No inventário periódico, qual é a fórmula básica do Custo das Mercadorias Vendidas (CMV)?", "options": ["CMV = Receita Bruta - Estoque Inicial", "CMV = Estoque Final + Vendas - Compras", "CMV = Estoque Inicial - Compras + Estoque Final", "CMV = Estoque Inicial + Compras - Estoque Final"], "answer": 3, "explanation": "O inventário periódico apura o CMV ao fim do período com base na contagem física do estoque final."}, {"difficulty": "médio", "q": "Qual característica define o inventário permanente?", "options": ["Dispensa de fichas ou controles de estoque", "Registro somente das vendas à vista", "Atualização contínua do estoque e do CMV a cada compra e venda", "Apuração do CMV apenas uma vez por ano"], "answer": 2, "explanation": "O inventário permanente controla continuamente saldos de estoque e custo das mercadorias vendidas."}, {"difficulty": "médio", "q": "Quando o critério de custo específico é mais adequado?", "options": ["Quando todos os produtos são idênticos e de baixo valor", "Quando a empresa deseja ignorar o custo real de aquisição", "Quando não há controle individual de unidades", "Quando cada item possui custo individualmente identificável"], "answer": 3, "explanation": "O custo específico é indicado para bens únicos ou facilmente identificáveis, como veículos de modelos distintos."}, {"difficulty": "médio", "q": "O que ocorre na média ponderada móvel quando há nova compra com preço diferente?", "options": ["O estoque é baixado sempre pelo custo mais antigo", "A compra é registrada diretamente como despesa", "O custo médio unitário do estoque é recalculado", "O custo médio fica congelado até o fim do exercício"], "answer": 2, "explanation": "Na MPM, o custo médio muda a cada nova compra com preço diferente."}, {"difficulty": "médio", "q": "No método PEPS, qual lote compõe primeiro o CMV?", "options": ["O lote adquirido mais recentemente", "O lote de maior preço", "O lote escolhido aleatoriamente pela administração", "O lote adquirido há mais tempo"], "answer": 3, "explanation": "PEPS significa primeiro que entra, primeiro que sai."}, {"difficulty": "médio", "q": "No método UEPS, qual lote é baixado primeiro?", "options": ["O lote mais antigo", "O lote que está fisicamente danificado", "O lote de menor quantidade", "O lote adquirido mais recentemente"], "answer": 3, "explanation": "UEPS significa último que entra, primeiro que sai."}, {"difficulty": "médio", "q": "Sobre o UEPS no Brasil, a afirmação correta é:", "options": ["É o único método aceito pela legislação fiscal", "É obrigatório para empresas comerciais", "Não é aceito para fins fiscais, mas pode ser usado para fins gerenciais", "Substitui a necessidade de controle de estoque"], "answer": 2, "explanation": "O material destaca que o UEPS não é aceito fiscalmente no Brasil."}, {"difficulty": "médio", "q": "Na compra de mercadorias para revenda, enquanto não forem vendidas, elas ficam registradas em:", "options": ["Receita bruta, no resultado", "Despesa financeira, no resultado", "Estoque, no ativo", "Fornecedores, no patrimônio líquido"], "answer": 2, "explanation": "Mercadorias adquiridas permanecem no estoque até sua venda."}, {"difficulty": "médio", "q": "Na venda de mercadorias, a contabilidade deve registrar principalmente:", "options": ["A receita de venda e a baixa do estoque para CMV", "Somente a baixa de fornecedores", "Apenas a entrada de caixa", "A transferência direta para patrimônio líquido"], "answer": 0, "explanation": "A venda exige reconhecimento da receita e do custo da mercadoria vendida."}, {"difficulty": "médio", "q": "O resultado bruto com mercadorias é obtido por:", "options": ["Ativo total menos passivo total", "Receita financeira menos fornecedores", "Receita de vendas menos CMV", "CMV menos estoque final"], "answer": 2, "explanation": "O RCM evidencia a margem gerada na operação de venda de mercadorias."}, {"difficulty": "médio", "q": "O ICMS é classificado, em regra, como:", "options": ["Tributo federal exclusivo sobre folha", "Tributo municipal sobre lucro", "Despesa não recuperável em todos os regimes", "Tributo estadual incidente sobre circulação de mercadorias e serviços"], "answer": 3, "explanation": "O ICMS é estadual e pode gerar crédito quando destacado na nota fiscal, conforme a operação e o regime."}, {"difficulty": "médio", "q": "Para a empresa se creditar de ICMS na compra, é necessário que o imposto esteja:", "options": ["Informado somente no extrato bancário", "Registrado apenas no contrato social", "Oculto no valor total da compra", "Destacado na nota fiscal"], "answer": 3, "explanation": "O crédito de ICMS depende de destaque fiscal e atendimento às regras aplicáveis."}, {"difficulty": "médio", "q": "PIS e Cofins podem gerar créditos principalmente quando a empresa está sujeita ao regime:", "options": ["Lucro presumido sem exceções", "Cumulativo sem direito a crédito", "Não cumulativo", "Simples Nacional em qualquer anexo"], "answer": 2, "explanation": "No regime não cumulativo, certos créditos de PIS e Cofins podem ser apropriados."}, {"difficulty": "médio", "q": "Na mensuração do estoque, tributos recuperáveis devem ser:", "options": ["Registrados como receita de vendas", "Ignorados integralmente", "Somados ao lucro líquido", "Excluídos do custo do estoque e registrados como tributos a recuperar"], "answer": 3, "explanation": "O custo do estoque representa o valor não recuperável pela empresa."}, {"difficulty": "médio", "q": "Depreciação é aplicada principalmente a:", "options": ["Bens tangíveis sujeitos ao desgaste ou uso", "Direitos intangíveis de vida definida", "Receitas financeiras", "Recursos minerais extraídos"], "answer": 0, "explanation": "Máquinas, veículos e equipamentos são exemplos de bens depreciáveis."}, {"difficulty": "médio", "q": "Amortização é aplicada principalmente a:", "options": ["ICMS a recolher", "Ativos intangíveis com vida útil definida", "Caixa e equivalentes", "Estoques de mercadorias"], "answer": 1, "explanation": "Direitos e intangíveis de vida definida são amortizados ao longo do prazo de benefício."}, {"difficulty": "médio", "q": "Exaustão está relacionada a:", "options": ["Venda de mercadorias a prazo", "Cálculo do lucro presumido", "Crédito de ICMS", "Consumo de recursos naturais ou minerais"], "answer": 3, "explanation": "A exaustão reconhece o consumo econômico de recursos naturais exploráveis."}, {"difficulty": "médio", "q": "A conta de depreciação acumulada normalmente é apresentada como:", "options": ["Receita operacional", "Reserva de lucros", "Conta redutora do ativo", "Obrigação fiscal"], "answer": 2, "explanation": "A depreciação acumulada reduz o valor contábil do ativo depreciável."}, {"difficulty": "médio", "q": "A Apuração do Resultado do Exercício (ARE) tem como finalidade:", "options": ["Calcular somente o ICMS", "Substituir o balanço patrimonial", "Registrar apenas compras a prazo", "Encerrar receitas e despesas para determinar lucro ou prejuízo"], "answer": 3, "explanation": "Na ARE, receitas e despesas são confrontadas para apurar o resultado do período."}, {"difficulty": "médio", "q": "Quando as receitas superam as despesas, a empresa apura:", "options": ["Lucro", "Prejuízo", "Passivo descoberto automaticamente", "Estoque negativo"], "answer": 0, "explanation": "Lucro ocorre quando as receitas são maiores que as despesas do período."}, {"difficulty": "médio", "q": "A Demonstração do Resultado do Exercício evidencia principalmente:", "options": ["Receitas, custos, despesas e resultado do período", "Somente saldos bancários", "Somente obrigações trabalhistas", "Apenas bens e direitos permanentes"], "answer": 0, "explanation": "A DRE mostra o desempenho econômico do período."}, {"difficulty": "médio", "q": "O CMV, quando reconhecido na venda, aparece na DRE como:", "options": ["Custo relacionado à geração da receita de venda", "Tributo a recuperar", "Reserva de capital", "Ativo circulante"], "answer": 0, "explanation": "O CMV é confrontado com a receita para apurar o resultado bruto."}, {"difficulty": "médio", "q": "Na compra de mercadorias a prazo, o crédito contábil normalmente será em:", "options": ["Receita bruta", "Despesa com vendas", "Capital social", "Fornecedores"], "answer": 3, "explanation": "Compra a prazo gera obrigação com fornecedores."}, {"difficulty": "médio", "q": "Na venda à vista de mercadorias, o débito inicial pelo recebimento será em:", "options": ["ICMS a recuperar", "Depreciação acumulada", "Caixa ou bancos", "Fornecedores"], "answer": 2, "explanation": "Venda à vista aumenta caixa ou bancos."}, {"difficulty": "médio", "q": "O plano de ensino relaciona operações de compras e vendas, tributos e apuração do resultado porque essas habilidades permitem:", "options": ["Substituir controles de estoque por estimativas livres", "Entender a formação do lucro e os registros principais da contabilidade financeira", "Evitar a elaboração da DRE", "Eliminar a necessidade de reconhecer custos"], "answer": 1, "explanation": "Esses conteúdos dão suporte à compreensão prática da contabilidade financeira."}, {"difficulty": "difícil", "q": "Uma empresa tinha 10 unidades a R$ 20 e comprou mais 5 unidades a R$ 30. Pela média ponderada móvel, qual é o custo médio unitário aproximado?", "options": ["R$ 20,00", "R$ 30,00", "R$ 23,33", "R$ 25,00"], "answer": 2, "explanation": "Custo total: 10 x 20 + 5 x 30 = 350. Quantidade: 15. Média = 350/15 = 23,33."}, {"difficulty": "difícil", "q": "Com 10 unidades a R$ 20 e compra de 5 unidades a R$ 30, se forem vendidas 12 unidades pelo PEPS, qual será o CMV?", "options": ["R$ 360,00", "R$ 290,00", "R$ 240,00", "R$ 260,00"], "answer": 3, "explanation": "PEPS baixa primeiro 10 x 20 = 200 e depois 2 x 30 = 60. Total = 260."}, {"difficulty": "difícil", "q": "Com 10 unidades a R$ 20 e compra de 5 unidades a R$ 30, se forem vendidas 12 unidades pelo UEPS, qual será o CMV?", "options": ["R$ 260,00", "R$ 150,00", "R$ 290,00", "R$ 240,00"], "answer": 2, "explanation": "UEPS baixa primeiro 5 x 30 = 150 e depois 7 x 20 = 140. Total = 290."}, {"difficulty": "difícil", "q": "No cenário de 10 unidades a R$ 20 e compra de 5 unidades a R$ 30, após venda de 12 unidades pelo PEPS, qual será o valor do estoque final?", "options": ["R$ 260,00", "R$ 60,00", "R$ 90,00", "R$ 150,00"], "answer": 2, "explanation": "Restam 3 unidades do lote mais recente: 3 x 30 = 90."}, {"difficulty": "difícil", "q": "No cenário de 10 unidades a R$ 20 e compra de 5 unidades a R$ 30, após venda de 12 unidades pelo UEPS, qual será o valor do estoque final?", "options": ["R$ 60,00", "R$ 90,00", "R$ 150,00", "R$ 290,00"], "answer": 0, "explanation": "Restam 3 unidades do lote antigo: 3 x 20 = 60."}, {"difficulty": "difícil", "q": "A empresa compra R$ 80.000 em mercadorias com ICMS de 18% recuperável. Qual valor deve ser registrado em Estoques?", "options": ["R$ 14.400,00", "R$ 65.600,00", "R$ 94.400,00", "R$ 80.000,00"], "answer": 1, "explanation": "ICMS recuperável: 80.000 x 18% = 14.400. Estoque = 80.000 - 14.400 = 65.600."}, {"difficulty": "difícil", "q": "Na venda de R$ 120.000 com ICMS de 18%, qual é o ICMS sobre vendas?", "options": ["R$ 21.600,00", "R$ 7.200,00", "R$ 18.000,00", "R$ 14.400,00"], "answer": 0, "explanation": "ICMS sobre vendas = 120.000 x 18% = 21.600."}, {"difficulty": "difícil", "q": "Se havia ICMS a recuperar de R$ 14.400 e ICMS sobre vendas de R$ 21.600, qual ICMS líquido a recolher?", "options": ["R$ 7.200,00", "R$ 36.000,00", "R$ 14.400,00", "R$ 21.600,00"], "answer": 0, "explanation": "ICMS líquido = 21.600 - 14.400 = 7.200."}, {"difficulty": "difícil", "q": "Uma compra de R$ 50.000 possui ICMS 12%, PIS 1,65% e Cofins 7,6%, todos recuperáveis. Qual é o custo do estoque?", "options": ["R$ 50.000,00", "R$ 44.000,00", "R$ 39.375,00", "R$ 10.625,00"], "answer": 2, "explanation": "Tributos recuperáveis: 21,25% de 50.000 = 10.625. Estoque = 39.375."}, {"difficulty": "difícil", "q": "Um equipamento de R$ 100.000, valor residual de R$ 10.000 e vida útil de 9 anos terá depreciação anual linear de:", "options": ["R$ 9.000,00", "R$ 11.111,11", "R$ 10.000,00", "R$ 90.000,00"], "answer": 2, "explanation": "Base depreciável = 100.000 - 10.000 = 90.000. Depreciação anual = 90.000/9 = 10.000."}, {"difficulty": "difícil", "q": "Um direito intangível de R$ 60.000 com vida útil de 5 anos terá amortização anual linear de:", "options": ["R$ 5.000,00", "R$ 10.000,00", "R$ 60.000,00", "R$ 12.000,00"], "answer": 3, "explanation": "Amortização anual = 60.000/5 = 12.000."}, {"difficulty": "difícil", "q": "Uma jazida registrada por R$ 200.000 possui estimativa de 100.000 unidades. Se foram extraídas 20.000 unidades, a exaustão do período será:", "options": ["R$ 20.000,00", "R$ 40.000,00", "R$ 100.000,00", "R$ 160.000,00"], "answer": 1, "explanation": "Taxa de consumo = 20.000/100.000 = 20%. Exaustão = 20% x 200.000 = 40.000."}, {"difficulty": "difícil", "q": "Receitas de R$ 15.000, CMV de R$ 8.000 e despesas diversas de R$ 4.000 geram qual resultado?", "options": ["Lucro de R$ 3.000", "Lucro de R$ 7.000", "Prejuízo de R$ 3.000", "Resultado nulo"], "answer": 0, "explanation": "Resultado = 15.000 - 8.000 - 4.000 = 3.000."}, {"difficulty": "difícil", "q": "Uma empresa vendeu mercadorias por R$ 30.000 cujo custo baixado do estoque foi R$ 12.500. Qual é o resultado bruto com mercadorias?", "options": ["R$ 12.500,00", "R$ 17.500,00", "R$ 42.500,00", "R$ 30.000,00"], "answer": 1, "explanation": "Resultado bruto = receita de 30.000 - CMV de 12.500 = 17.500."}, {"difficulty": "difícil", "q": "No inventário periódico, com estoque inicial de R$ 20.000, compras de R$ 70.000 e estoque final de R$ 25.000, qual é o CMV?", "options": ["R$ 115.000,00", "R$ 90.000,00", "R$ 45.000,00", "R$ 65.000,00"], "answer": 3, "explanation": "CMV = 20.000 + 70.000 - 25.000 = 65.000."}, {"difficulty": "difícil", "q": "Uma empresa possuía 3 unidades a R$ 25 e comprou 3 unidades a R$ 35. Qual é o novo custo médio pela MPM?", "options": ["R$ 60,00", "R$ 25,00", "R$ 30,00", "R$ 35,00"], "answer": 2, "explanation": "Custo total = 75 + 105 = 180. Quantidade = 6. Média = 30."}, {"difficulty": "difícil", "q": "Se o custo médio é R$ 30 e a empresa vende 4 unidades, o CMV pela MPM será:", "options": ["R$ 110,00", "R$ 90,00", "R$ 120,00", "R$ 180,00"], "answer": 2, "explanation": "CMV = 4 x 30 = 120."}, {"difficulty": "difícil", "q": "Uma concessionária adquiriu veículos por R$ 110.000, R$ 150.000, R$ 180.000, R$ 220.000 e R$ 250.000. Pelo custo específico, o estoque total é:", "options": ["R$ 230.000,00", "R$ 680.000,00", "R$ 750.000,00", "R$ 910.000,00"], "answer": 3, "explanation": "Soma dos cinco custos individuais = 910.000."}, {"difficulty": "difícil", "q": "No exemplo dos veículos, se o Modelo II custou R$ 150.000 e foi vendido por R$ 230.000, o resultado bruto dessa venda é:", "options": ["R$ 910.000,00", "R$ 80.000,00", "R$ 230.000,00", "R$ 150.000,00"], "answer": 1, "explanation": "Resultado bruto = 230.000 - 150.000 = 80.000."}, {"difficulty": "difícil", "q": "Compra a prazo de mercadorias por R$ 25.000, sem tributos. O lançamento correto é:", "options": ["D - Fornecedores / C - Receita", "D - Estoques / C - Fornecedores", "D - Caixa / C - Estoques", "D - CMV / C - Caixa"], "answer": 1, "explanation": "Mercadorias entram no ativo e a dívida é reconhecida em fornecedores."}, {"difficulty": "difícil", "q": "Se metade de um estoque de R$ 25.000 é vendida, qual CMV deve ser reconhecido?", "options": ["R$ 30.000,00", "R$ 12.500,00", "R$ 17.500,00", "R$ 25.000,00"], "answer": 1, "explanation": "Metade do estoque corresponde a 25.000/2 = 12.500."}, {"difficulty": "difícil", "q": "Qual alternativa representa corretamente o tratamento de tributos recuperáveis na compra?", "options": ["São registrados como patrimônio líquido", "Aumentam o CMV no momento da compra", "São sempre despesas operacionais", "Reduzem o valor registrado no estoque"], "answer": 3, "explanation": "O estoque deve conter somente o custo não recuperável."}, {"difficulty": "difícil", "q": "Em um cenário de preços crescentes, comparando PEPS e UEPS, o PEPS tende a gerar:", "options": ["CMV maior e estoque final menor", "CMV igual ao UEPS obrigatoriamente", "CMV menor e estoque final maior", "Estoque final nulo"], "answer": 2, "explanation": "Com preços crescentes, o PEPS baixa os custos antigos, menores, e deixa no estoque os custos recentes, maiores."}, {"difficulty": "difícil", "q": "Em um cenário de preços crescentes, o UEPS tende a gerar:", "options": ["Tributos recuperáveis nulos", "CMV maior e lucro bruto menor", "CMV menor e lucro bruto maior", "Receita bruta menor"], "answer": 1, "explanation": "O UEPS baixa primeiro as aquisições mais recentes, normalmente mais caras."}, {"difficulty": "difícil", "q": "Após o encerramento das contas de resultado, receitas e despesas ficam zeradas porque seus saldos são transferidos para:", "options": ["Estoque e fornecedores", "Caixa e bancos", "ICMS a recuperar", "ARE e, depois, para lucros ou prejuízos acumulados no patrimônio líquido"], "answer": 3, "explanation": "A apuração transfere o resultado líquido para o patrimônio líquido."}], "aula5": [{"difficulty": "médio", "q": "Regimes tributários são:", "options": ["Tipos de demonstrações contábeis obrigatórias", "Modelos de controle físico de estoque", "Métodos de depreciação de ativos", "Opções legais que definem como tributos serão calculados e recolhidos"], "answer": 3, "explanation": "A escolha do regime influencia valores de tributos, obrigações acessórias e prazos."}, {"difficulty": "médio", "q": "Quais regimes são estudados na Aula 5?", "options": ["PEPS, UEPS e média ponderada", "DRE, DFC e DVA", "Ativo, passivo e patrimônio líquido", "Lucro presumido, lucro real e Simples Nacional"], "answer": 3, "explanation": "A aula aborda os principais regimes tributários empresariais."}, {"difficulty": "médio", "q": "No lucro presumido, a base de IRPJ e CSLL é obtida principalmente a partir:", "options": ["Das receitas, aplicando percentuais de presunção", "Da variação do caixa", "Da folha de pagamento apenas", "Do estoque físico final"], "answer": 0, "explanation": "O lucro é presumido a partir das receitas, não necessariamente do lucro contábil efetivo."}, {"difficulty": "médio", "q": "No lucro presumido, o cálculo de IRPJ e CSLL é, em regra:", "options": ["Trimestral", "Semanal", "A cada cinco anos", "Diário"], "answer": 0, "explanation": "O material cita os trimestres encerrados em março, junho, setembro e dezembro."}, {"difficulty": "médio", "q": "Empresas com receita bruta anual anterior acima de R$ 78 milhões, em regra, não podem optar pelo:", "options": ["Inventário permanente", "Lucro presumido", "SPED", "Lucro real"], "answer": 1, "explanation": "O limite mencionado para lucro presumido é de R$ 78 milhões no ano anterior."}, {"difficulty": "médio", "q": "No lucro real, a base do IRPJ e da CSLL considera:", "options": ["Lucro tributável apurado a partir de receitas tributáveis e despesas dedutíveis", "Apenas o capital social", "Receita bruta sem deduções em todos os casos", "Quantidade de mercadorias em estoque"], "answer": 0, "explanation": "O lucro real aproxima a tributação do lucro efetivo ajustado pelas regras fiscais."}, {"difficulty": "médio", "q": "O LALUR serve para:", "options": ["Transformar o lucro contábil em lucro tributável aceito pelo Fisco", "Calcular o custo médio dos estoques", "Emitir nota fiscal de venda", "Apurar somente o ICMS de compra"], "answer": 0, "explanation": "O Livro de Apuração do Lucro Real registra ajustes fiscais ao lucro contábil."}, {"difficulty": "médio", "q": "No LALUR, adições normalmente representam:", "options": ["Receitas que não foram tributadas por opção gerencial", "Compras de estoque sem nota fiscal", "Reduções automáticas do lucro tributável", "Despesas contabilizadas que não são aceitas pelo Fisco"], "answer": 3, "explanation": "Adições aumentam a base tributável."}, {"difficulty": "médio", "q": "No LALUR, exclusões normalmente representam:", "options": ["Venda de mercadorias sempre tributadas", "Apenas prejuízos contábeis", "Despesas indedutíveis que aumentam o lucro", "Receitas contabilizadas que não são exigidas pelo Fisco ou despesas aceitas fiscalmente"], "answer": 3, "explanation": "Exclusões reduzem a base tributável conforme a legislação."}, {"difficulty": "médio", "q": "O limite geral de receita bruta anual para enquadramento no Simples Nacional citado no material é:", "options": ["R$ 60.000,00", "R$ 4.800.000,00", "R$ 120.000,00", "R$ 78.000.000,00"], "answer": 1, "explanation": "O Simples Nacional possui limite de R$ 4,8 milhões, conforme o material."}, {"difficulty": "médio", "q": "Quando a empresa inicia atividade no meio do ano, o limite do Simples Nacional deve ser:", "options": ["Sempre dobrado", "Ignorado no primeiro ano", "Calculado pelo lucro líquido", "Proporcional aos meses de atividade"], "answer": 3, "explanation": "O limite é proporcional ao período de funcionamento."}, {"difficulty": "médio", "q": "O Simples Nacional unifica recolhimentos por meio de:", "options": ["DRE analítica obrigatória", "Conta de depreciação acumulada", "Documento único de arrecadação", "Livro de inventário físico"], "answer": 2, "explanation": "O Simples simplifica o recolhimento de vários tributos."}, {"difficulty": "médio", "q": "Entre os tributos unificados no Simples Nacional estão:", "options": ["Apenas ICMS e IPVA", "Somente IRPF", "IRPJ, IPI, CSLL, Cofins, PIS, CPP, ICMS e ISS", "Apenas IPTU e ISS"], "answer": 2, "explanation": "O material lista esses tributos no recolhimento unificado."}, {"difficulty": "médio", "q": "Os anexos do Simples Nacional organizam as alíquotas conforme:", "options": ["A natureza das atividades e receitas da empresa", "O método de controle de estoque", "O valor do ativo imobilizado", "A quantidade de sócios"], "answer": 0, "explanation": "As atividades de comércio, indústria e serviços são tratadas em anexos específicos."}, {"difficulty": "médio", "q": "No lucro presumido, receitas financeiras possuem presunção de:", "options": ["12%", "100%", "8%", "1,6%"], "answer": 1, "explanation": "Receitas financeiras entram integralmente na base presumida segundo a tabela apresentada."}, {"difficulty": "médio", "q": "A alíquota básica do IRPJ apresentada na aula é:", "options": ["3%", "9%", "15%", "0,65%"], "answer": 2, "explanation": "O IRPJ possui alíquota básica de 15%, com adicional em certas situações."}, {"difficulty": "médio", "q": "A alíquota da CSLL utilizada nos exemplos da aula é:", "options": ["15%", "10%", "9%", "1,6%"], "answer": 2, "explanation": "Nos exemplos do material, a CSLL é calculada por 9% da base."}, {"difficulty": "médio", "q": "No lucro presumido, PIS e Cofins normalmente incidem no regime:", "options": ["Por exaustão de recursos naturais", "Não cumulativo obrigatório", "Sem qualquer alíquota", "Cumulativo"], "answer": 3, "explanation": "A aula menciona PIS 0,65% e Cofins 3% no regime cumulativo."}, {"difficulty": "médio", "q": "O SPED é voltado principalmente à:", "options": ["Escrituração e envio eletrônico de informações ao Fisco", "Controle manual de folha de ponto", "Substituição do plano de contas por inventário físico", "Cálculo exclusivo de depreciação"], "answer": 0, "explanation": "O SPED informatiza fluxos de dados para fiscalização e controle."}, {"difficulty": "médio", "q": "Um objetivo do SPED citado na aula é:", "options": ["Eliminar toda obrigação contábil", "Inibir a sonegação fiscal e alimentar bases de dados do Fisco", "Permitir venda sem nota fiscal", "Dispensar controles internos"], "answer": 1, "explanation": "O SPED melhora fiscalização e pode aprimorar controles internos."}, {"difficulty": "médio", "q": "Planejamento tributário busca, dentro da legalidade:", "options": ["Substituir documentos fiscais por estimativas", "Omitir receitas tributáveis", "Evitar o registro contábil de despesas", "Reduzir o impacto dos tributos sobre os resultados"], "answer": 3, "explanation": "O planejamento tributário compara regimes e alternativas legais."}, {"difficulty": "médio", "q": "A escolha do regime tributário afeta também:", "options": ["Somente a cor do balanço", "O nome dos clientes", "Obrigações acessórias e prazos", "A existência física do estoque"], "answer": 2, "explanation": "Além do valor de tributos, o regime altera rotinas e entregas fiscais."}, {"difficulty": "médio", "q": "Vendas canceladas e devoluções, no lucro presumido, tendem a:", "options": ["Ser tributadas em dobro", "Ser registradas apenas no patrimônio líquido", "Reduzir as receitas usadas na base estimada", "Aumentar a base de cálculo"], "answer": 2, "explanation": "Deduções permitidas reduzem a receita considerada para a base."}, {"difficulty": "médio", "q": "O PGDAS-D está relacionado ao cálculo declaratório do:", "options": ["Lucro real pelo LALUR", "Simples Nacional", "Inventário periódico", "UEPS"], "answer": 1, "explanation": "O PGDAS-D é o programa gerador do documento de arrecadação do Simples Nacional."}, {"difficulty": "médio", "q": "No Anexo I do Simples Nacional estão, em geral:", "options": ["Recursos naturais em exaustão", "Atividades de comércio", "Atividades de indústria", "Receitas financeiras exclusivamente"], "answer": 1, "explanation": "A aula enumera o Anexo I para comércio."}, {"difficulty": "difícil", "q": "Uma empresa comercial no lucro presumido teve R$ 100.000 de receita. Com presunção de IRPJ de 8%, qual é a base presumida de IRPJ?", "options": ["R$ 15.000,00", "R$ 100.000,00", "R$ 12.000,00", "R$ 8.000,00"], "answer": 3, "explanation": "Base presumida = 100.000 x 8% = 8.000."}, {"difficulty": "difícil", "q": "Serviço em geral no lucro presumido teve R$ 200.000 de receita. Com presunção de 32%, qual IRPJ total, considerando 15% e adicional de 10% sobre o que exceder R$ 60.000?", "options": ["R$ 9.600,00", "R$ 16.000,00", "R$ 6.400,00", "R$ 10.000,00"], "answer": 3, "explanation": "Base = 64.000. IRPJ básico = 9.600. Adicional = (64.000 - 60.000) x 10% = 400. Total = 10.000."}, {"difficulty": "difícil", "q": "Uma empresa comercial tem R$ 100.000 de receita no lucro presumido. Com presunção de CSLL de 12% e alíquota de 9%, qual CSLL?", "options": ["R$ 900,00", "R$ 1.200,00", "R$ 9.000,00", "R$ 1.080,00"], "answer": 3, "explanation": "Base CSLL = 100.000 x 12% = 12.000. CSLL = 12.000 x 9% = 1.080."}, {"difficulty": "difícil", "q": "No exemplo do posto, receitas líquidas para IRPJ: combustível R$ 250.000 a 1,6%, mercadorias R$ 46.000 a 8% e financeiras R$ 20.000 a 100%. Qual é a base de IRPJ?", "options": ["R$ 27.680,00", "R$ 4.152,00", "R$ 55.520,00", "R$ 320.000,00"], "answer": 0, "explanation": "Base = 4.000 + 3.680 + 20.000 = 27.680."}, {"difficulty": "difícil", "q": "Com base presumida de IRPJ de R$ 27.680, sem adicional, qual IRPJ a recolher?", "options": ["R$ 4.996,80", "R$ 4.152,00", "R$ 8.190,00", "R$ 2.768,00"], "answer": 1, "explanation": "IRPJ = 27.680 x 15% = 4.152."}, {"difficulty": "difícil", "q": "No exemplo do posto, base de CSLL de R$ 55.520. Com alíquota de 9%, qual CSLL?", "options": ["R$ 5.552,00", "R$ 4.996,80", "R$ 8.190,00", "R$ 4.152,00"], "answer": 1, "explanation": "CSLL = 55.520 x 9% = 4.996,80."}, {"difficulty": "difícil", "q": "No lucro real, resultado antes dos tributos de R$ 91.000. Qual IRPJ total com 15% e adicional de 10% sobre o excedente de R$ 60.000?", "options": ["R$ 16.750,00", "R$ 9.100,00", "R$ 13.650,00", "R$ 8.190,00"], "answer": 0, "explanation": "IRPJ básico = 91.000 x 15% = 13.650. Adicional = 31.000 x 10% = 3.100. Total = 16.750."}, {"difficulty": "difícil", "q": "No lucro real, resultado tributável de R$ 91.000. Com CSLL de 9%, qual valor será recolhido?", "options": ["R$ 8.190,00", "R$ 4.996,80", "R$ 16.750,00", "R$ 9.100,00"], "answer": 0, "explanation": "CSLL = 91.000 x 9% = 8.190."}, {"difficulty": "difícil", "q": "No cálculo anterior do IRPJ sobre R$ 91.000, qual é apenas o adicional de IRPJ?", "options": ["R$ 16.750,00", "R$ 9.100,00", "R$ 3.100,00", "R$ 13.650,00"], "answer": 2, "explanation": "Adicional = (91.000 - 60.000) x 10% = 3.100."}, {"difficulty": "difícil", "q": "Empresa iniciou atividades em outubro. Pelo limite anual de R$ 4,8 milhões do Simples, qual limite proporcional para outubro a dezembro?", "options": ["R$ 2.400.000,00", "R$ 4.800.000,00", "R$ 1.200.000,00", "R$ 400.000,00"], "answer": 2, "explanation": "Limite mensal = 4.800.000/12 = 400.000. Três meses = 1.200.000."}, {"difficulty": "difícil", "q": "Empresa faturou R$ 5.000.000 no ano anterior. Pelo limite citado no material, ela poderá optar pelo Simples Nacional no ano seguinte?", "options": ["Sim, pois o limite é R$ 78.000.000", "Sim, porque o lucro foi presumido", "Não, pois ultrapassou R$ 4.800.000", "Sim, desde que tenha estoque baixo"], "answer": 2, "explanation": "R$ 5 milhões supera o limite geral de R$ 4,8 milhões."}, {"difficulty": "difícil", "q": "No lucro presumido cumulativo, uma venda de R$ 100.000 gera PIS de 0,65% e Cofins de 3%. Qual o total desses tributos?", "options": ["R$ 650,00", "R$ 3.650,00", "R$ 3.000,00", "R$ 4.152,00"], "answer": 1, "explanation": "PIS = 650 e Cofins = 3.000. Total = 3.650."}, {"difficulty": "difícil", "q": "No LALUR: resultado antes dos tributos R$ 200.000, adições R$ 30.000, exclusões R$ 50.000 e compensação de prejuízos R$ 20.000. Qual resultado tributável?", "options": ["R$ 200.000,00", "R$ 300.000,00", "R$ 180.000,00", "R$ 160.000,00"], "answer": 3, "explanation": "200.000 + 30.000 - 50.000 - 20.000 = 160.000."}, {"difficulty": "difícil", "q": "No lucro real, receita de R$ 500.000, custos de R$ 320.000 e despesas dedutíveis de R$ 80.000 geram lucro tributável de R$ 100.000. Qual IRPJ com adicional?", "options": ["R$ 9.000,00", "R$ 10.000,00", "R$ 19.000,00", "R$ 15.000,00"], "answer": 2, "explanation": "IRPJ básico = 100.000 x 15% = 15.000. Adicional = 40.000 x 10% = 4.000. Total = 19.000."}, {"difficulty": "difícil", "q": "Com lucro tributável de R$ 100.000 no lucro real, qual CSLL a 9%?", "options": ["R$ 15.000,00", "R$ 9.000,00", "R$ 4.000,00", "R$ 19.000,00"], "answer": 1, "explanation": "CSLL = 100.000 x 9% = 9.000."}, {"difficulty": "difícil", "q": "Em geral, o lucro presumido tende a ser mais vantajoso quando:", "options": ["A empresa não possui receita", "A margem real de lucro é maior que a margem presumida aplicável", "Todas as despesas são indedutíveis e maiores que a receita", "A empresa tem prejuízo fiscal recorrente"], "answer": 1, "explanation": "Se o lucro efetivo supera o lucro presumido, a base tributável presumida pode ser menor."}, {"difficulty": "difícil", "q": "Se a empresa apresenta prejuízo fiscal e possui muitas despesas dedutíveis, o regime que melhor reflete essa situação tende a ser:", "options": ["UEPS fiscal", "Simples Nacional obrigatoriamente", "Lucro presumido sempre", "Lucro real"], "answer": 3, "explanation": "O lucro real considera receitas e despesas dedutíveis para apurar o lucro tributável."}, {"difficulty": "difícil", "q": "No Simples Nacional, rendimentos de aplicações financeiras são tratados como:", "options": ["Custo das mercadorias vendidas", "Sempre receita bruta operacional do Anexo I", "Não integrantes da receita bruta de venda de bens e serviços para o cálculo pelo PGDAS-D", "Base de ICMS obrigatória"], "answer": 2, "explanation": "A aula aponta que rendimentos financeiros não entram no conceito de receita bruta de venda de bens e serviços."}, {"difficulty": "difícil", "q": "Qual anexo do Simples Nacional é associado a atividades de indústria?", "options": ["Anexo II", "Anexo IV", "Anexo V", "Anexo I"], "answer": 0, "explanation": "A aula lista o Anexo II para indústria."}, {"difficulty": "difícil", "q": "No Simples Nacional, a exceção de CPP mencionada na aula ocorre para empresas do:", "options": ["Anexo IV", "Anexo III", "Anexo II", "Anexo I"], "answer": 0, "explanation": "Empresas do Anexo IV recolhem INSS patronal separadamente."}, {"difficulty": "difícil", "q": "Para prestação de serviços em geral no lucro presumido, a presunção de IRPJ indicada é:", "options": ["8%", "32%", "1,6%", "12%"], "answer": 1, "explanation": "Prestação de serviços em geral utiliza presunção de 32%."}, {"difficulty": "difícil", "q": "Para revenda de combustível a consumidor final, a presunção de IRPJ indicada é:", "options": ["16%", "32%", "8%", "1,6%"], "answer": 3, "explanation": "A tabela da aula usa 1,6% para IRPJ nessa atividade."}, {"difficulty": "difícil", "q": "Para transporte de passageiros, a presunção de IRPJ indicada é:", "options": ["1,6%", "32%", "8%", "16%"], "answer": 3, "explanation": "A tabela da aula indica 16% para transporte de passageiros."}, {"difficulty": "difícil", "q": "No lucro presumido, uma devolução de R$ 4.000 sobre vendas da conveniência de R$ 50.000 faz a receita considerada cair para:", "options": ["R$ 4.000,00", "R$ 54.000,00", "R$ 46.000,00", "R$ 50.000,00"], "answer": 2, "explanation": "Receita líquida considerada = 50.000 - 4.000 = 46.000."}, {"difficulty": "difícil", "q": "A implementação do SPED melhora a fiscalização porque:", "options": ["Substitui o pagamento de tributos", "Permite eliminar notas fiscais", "Impede o uso de demonstrações contábeis", "Padroniza e informatiza o envio de dados contábeis e fiscais"], "answer": 3, "explanation": "O SPED torna o fluxo de informações eletrônico e mais rastreável."}], "aula6": [{"difficulty": "médio", "q": "Conciliação contábil é:", "options": ["Registro exclusivo de receitas financeiras", "Cálculo do custo médio do estoque", "Comparação de informações para verificar alinhamento e necessidade de ajuste", "Escolha do regime tributário"], "answer": 2, "explanation": "A conciliação valida se os registros contábeis representam a realidade."}, {"difficulty": "médio", "q": "A conciliação é fundamental porque:", "options": ["Substitui a escrituração contábil", "Ajuda a garantir a qualidade e a confiabilidade das informações contábeis", "Impede qualquer despesa financeira", "Elimina a necessidade de documentos"], "answer": 1, "explanation": "Informações conciliadas apoiam decisões mais seguras."}, {"difficulty": "médio", "q": "Na conciliação bancária, compara-se principalmente:", "options": ["DRE com método PEPS", "Lançamentos contábeis com relatórios financeiros e extratos bancários", "Capital social com receita bruta", "Estoque físico com lucro presumido"], "answer": 1, "explanation": "A conciliação bancária verifica entradas, saídas e saldos."}, {"difficulty": "médio", "q": "A conciliação fiscal verifica, entre outros pontos:", "options": ["Se o lucro presumido é igual ao caixa", "Se os lançamentos contábeis refletem tributos apurados e documentos fiscais", "Se todo ativo deve ser amortizado", "Se o estoque é sempre vendido pelo UEPS"], "answer": 1, "explanation": "Notas, tributos e registros contábeis devem estar alinhados."}, {"difficulty": "médio", "q": "Contas a receber e a pagar podem ser conciliadas com:", "options": ["Apenas fotografias do estoque", "Somente quadro de funcionários", "Apenas contratos sociais antigos", "Relatórios financeiros, notas fiscais e duplicatas"], "answer": 3, "explanation": "Essas contas exigem conferência documental e financeira."}, {"difficulty": "médio", "q": "Análise vertical mede:", "options": ["A vida útil de um ativo", "A representatividade de uma conta em relação a uma base no mesmo período", "A evolução de uma conta contra um período-base", "O prazo de recolhimento de tributos"], "answer": 1, "explanation": "A AV mostra participação percentual dentro de um grupo ou demonstração."}, {"difficulty": "médio", "q": "Análise horizontal mede:", "options": ["A alíquota de ICMS destacada", "A participação da conta no total do mesmo ano", "A evolução de contas ao longo do tempo em relação a uma base", "A quantidade física de estoque"], "answer": 2, "explanation": "A AH compara períodos para identificar crescimento ou redução."}, {"difficulty": "médio", "q": "Análise vertical e horizontal utilizam, em termos básicos:", "options": ["Apenas inventário físico", "Regra de três e cálculo percentual", "Somente lançamentos dobrados", "Somente contratos fiscais"], "answer": 1, "explanation": "Ambas expressam relações em percentuais."}, {"difficulty": "médio", "q": "Liquidez corrente é calculada por:", "options": ["Lucro Bruto / Receita Líquida", "Disponível / Passivo Circulante", "Lucro Líquido / Patrimônio Líquido", "Ativo Circulante / Passivo Circulante"], "answer": 3, "explanation": "Mede a capacidade de pagamento de curto prazo com ativos circulantes."}, {"difficulty": "médio", "q": "Liquidez seca é calculada por:", "options": ["Disponível / Passivo Circulante", "Lucro Bruto / Receita", "(Ativo Circulante - Estoques) / Passivo Circulante", "Ativo Total / Patrimônio Líquido"], "answer": 2, "explanation": "A liquidez seca exclui estoques do ativo circulante."}, {"difficulty": "médio", "q": "Liquidez imediata é calculada por:", "options": ["Passivo Circulante / Passivo Total", "Estoques / Ativo Total", "Disponível / Passivo Circulante", "Lucro Líquido / Receita"], "answer": 2, "explanation": "Mostra a cobertura das dívidas de curto prazo por recursos imediatamente disponíveis."}, {"difficulty": "médio", "q": "Liquidez geral é calculada por:", "options": ["(Ativo Circulante + Realizável a Longo Prazo) / (Passivo Circulante + Passivo Não Circulante)", "Passivo Circulante / Passivo Total", "Lucro Líquido / Ativo Médio", "Ativo Circulante / Passivo Circulante"], "answer": 0, "explanation": "Considera obrigações e direitos de curto e longo prazo."}, {"difficulty": "médio", "q": "Um índice de liquidez corrente maior que 1 indica, em leitura inicial:", "options": ["Patrimônio líquido negativo obrigatoriamente", "Ativo circulante superior ao passivo circulante", "Lucro líquido igual a zero", "Estoques inexistentes"], "answer": 1, "explanation": "Índice acima de 1 sugere folga de curto prazo, mas exige análise qualitativa."}, {"difficulty": "médio", "q": "Participação de capitais de terceiros mede:", "options": ["A margem de lucro sobre vendas", "A velocidade de rotação de estoque", "A alíquota de CSLL", "Quanto capital de terceiros financia a entidade em relação ao patrimônio líquido"], "answer": 3, "explanation": "É indicador de estrutura patrimonial/endividamento."}, {"difficulty": "médio", "q": "Composição do endividamento indica:", "options": ["Quanto do estoque foi vendido", "Quanto do ativo é intangível", "Quanto do lucro é distribuído", "Quanto das dívidas está concentrado no curto prazo"], "answer": 3, "explanation": "Relaciona passivo circulante com o total de capitais de terceiros."}, {"difficulty": "médio", "q": "Margem bruta é calculada por:", "options": ["Lucro Líquido / Patrimônio Líquido", "Disponível / Passivo Circulante", "Lucro Bruto / Receita Líquida de Vendas", "Passivo Total / Ativo Total"], "answer": 2, "explanation": "Mede a sobra após custos dos bens ou serviços vendidos."}, {"difficulty": "médio", "q": "Margem líquida é calculada por:", "options": ["Passivo Circulante / Passivo Total", "Lucro Líquido / Receita de Vendas", "Lucro Bruto / Estoques", "Ativo Circulante / Passivo Circulante"], "answer": 1, "explanation": "Mostra o percentual da receita que virou lucro líquido."}, {"difficulty": "médio", "q": "ROI avalia:", "options": ["Apenas o prazo de pagamento de tributos", "A recuperação de ICMS", "Retorno gerado sobre os investimentos ou ativos utilizados", "Somente o estoque final"], "answer": 2, "explanation": "O ROI relaciona resultado com recursos investidos."}, {"difficulty": "médio", "q": "ROE avalia:", "options": ["Valor do ICMS a recolher", "Rotatividade de estoque", "Retorno exclusivo sobre fornecedores", "Retorno sobre o patrimônio líquido dos proprietários"], "answer": 3, "explanation": "ROE mostra a rentabilidade do capital próprio."}, {"difficulty": "médio", "q": "Indicadores contábeis devem ser interpretados preferencialmente:", "options": ["Sem considerar o setor", "Apenas pelo maior número absoluto", "Em comparação histórica e com empresas semelhantes", "De forma isolada e sem contexto"], "answer": 2, "explanation": "Comparações ajudam a explicar oscilações e desempenho relativo."}, {"difficulty": "médio", "q": "Indicadores de rentabilidade relacionam resultados com:", "options": ["Apenas notas fiscais canceladas", "Vendas, ativos, patrimônio líquido ou investimentos", "Somente tributos estaduais", "Somente quantidade de funcionários"], "answer": 1, "explanation": "Rentabilidade avalia a capacidade de gerar retorno."}, {"difficulty": "médio", "q": "Uma liquidez imediata muito alta pode exigir análise porque:", "options": ["Pode indicar excesso de recursos parados, dependendo do contexto", "Impede pagamento de fornecedores", "Sempre significa prejuízo", "Sempre prova fraude"], "answer": 0, "explanation": "Indicadores precisam de interpretação gerencial, não apenas cálculo."}, {"difficulty": "médio", "q": "O não registro de uma despesa financeira observada no extrato bancário pode:", "options": ["Aumentar automaticamente o estoque", "Distorcer o lucro e afetar a base tributável no lucro real", "Eliminar o passivo circulante", "Gerar crédito de ICMS"], "answer": 1, "explanation": "A conciliação ajuda a detectar omissões e erros."}, {"difficulty": "médio", "q": "Quais setores costumam fornecer informações para a contabilidade?", "options": ["Apenas marketing", "Apenas fornecedores externos", "Financeiro, produção, departamento pessoal e estocagem", "Somente segurança patrimonial"], "answer": 2, "explanation": "A contabilidade aglutina informações de diferentes áreas."}, {"difficulty": "médio", "q": "A análise das demonstrações contábeis apoia:", "options": ["A escolha aleatória de tributos", "A eliminação da DRE", "Tomadas de decisão sobre situação financeira e desempenho", "O cancelamento de controles internos"], "answer": 2, "explanation": "Indicadores fornecem sinais para gestão e avaliação da entidade."}, {"difficulty": "difícil", "q": "Na Vulcabras, estoques de R$ 493.497 e ativo total de R$ 1.995.237 em 2021 representam, na análise vertical, aproximadamente:", "options": ["65,12%", "204,57%", "24,73%", "17,80%"], "answer": 2, "explanation": "AV = 493.497 / 1.995.237 = 24,73%."}, {"difficulty": "difícil", "q": "Estoques de R$ 493.497 em 2021 contra R$ 241.238 em 2019 geram índice de análise horizontal de aproximadamente:", "options": ["58,61%", "204,57%", "104,57%", "24,73%"], "answer": 1, "explanation": "AH índice = 493.497 / 241.238 x 100 = 204,57%. O aumento é 104,57%."}, {"difficulty": "difícil", "q": "Com Ativo Circulante de R$ 1.299.297 e Passivo Circulante de R$ 494.904, a liquidez corrente aproximada é:", "options": ["0,23", "1,63", "2,63", "0,38"], "answer": 2, "explanation": "Liquidez corrente = 1.299.297 / 494.904 = 2,63."}, {"difficulty": "difícil", "q": "Com Ativo Circulante de R$ 1.299.297, Estoques de R$ 493.497 e Passivo Circulante de R$ 494.904, a liquidez seca aproximada é:", "options": ["1,63", "0,23", "2,63", "0,86"], "answer": 0, "explanation": "Liquidez seca = (1.299.297 - 493.497) / 494.904 = 1,63."}, {"difficulty": "difícil", "q": "Com Disponível de R$ 114.635 e Passivo Circulante de R$ 494.904, a liquidez imediata aproximada é:", "options": ["0,52", "1,63", "2,63", "0,23"], "answer": 3, "explanation": "Liquidez imediata = 114.635 / 494.904 = 0,23."}, {"difficulty": "difícil", "q": "Com AC de R$ 1.299.297, RLP de R$ 97.662, PC de R$ 494.904 e PNC de R$ 143.771, a liquidez geral aproximada é:", "options": ["2,19", "0,47", "1,00", "0,78"], "answer": 0, "explanation": "Liquidez geral = (1.299.297 + 97.662) / (494.904 + 143.771) = 2,19."}, {"difficulty": "difícil", "q": "Com PC de R$ 494.904, PNC de R$ 143.771 e PL de R$ 1.356.562, a participação de capitais de terceiros aproximada é:", "options": ["0,78", "2,19", "1,47", "0,47"], "answer": 3, "explanation": "Capitais de terceiros = 638.675. PCT = 638.675 / 1.356.562 = 0,47."}, {"difficulty": "difícil", "q": "Com PC de R$ 494.904 e PNC de R$ 143.771, a composição do endividamento aproximada é:", "options": ["77,50%", "2,63%", "22,50%", "47,08%"], "answer": 0, "explanation": "Composição = PC / (PC + PNC) = 494.904 / 638.675 = 77,5%."}, {"difficulty": "difícil", "q": "Com lucro bruto de R$ 659.415 e receita líquida de R$ 1.867.176, a margem bruta aproximada é:", "options": ["29,53%", "16,81%", "10,52%", "35,32%"], "answer": 3, "explanation": "Margem bruta = 659.415 / 1.867.176 = 35,32%."}, {"difficulty": "difícil", "q": "Com lucro líquido de R$ 313.839 e receita líquida de R$ 1.867.176, a margem líquida aproximada é:", "options": ["16,81%", "35,32%", "2,68%", "25,29%"], "answer": 0, "explanation": "Margem líquida = 313.839 / 1.867.176 = 16,81%."}, {"difficulty": "difícil", "q": "Com lucro líquido de R$ 313.839 e ativo médio de R$ 1.837.245,50, o ROI aproximado é:", "options": ["25,29%", "17,08%", "16,81%", "2,85%"], "answer": 1, "explanation": "ROI = 313.839 / 1.837.245,50 = 17,08%."}, {"difficulty": "difícil", "q": "Com lucro líquido de R$ 313.839 e patrimônio líquido médio de R$ 1.240.978, o ROE aproximado é:", "options": ["17,08%", "25,29%", "16,81%", "35,32%"], "answer": 1, "explanation": "ROE = 313.839 / 1.240.978 = 25,29%."}, {"difficulty": "difícil", "q": "Na conciliação, se o financeiro indica entrada de R$ 200,45 e a contabilidade registra R$ 180,45, a contabilidade está:", "options": ["R$ 200,45 menor", "R$ 20,00 maior que o financeiro", "R$ 20,00 menor que o financeiro", "Exatamente conciliada"], "answer": 2, "explanation": "Diferença = 200,45 - 180,45 = 20,00."}, {"difficulty": "difícil", "q": "Se uma entrada foi registrada indevidamente como saída, qual sinal costuma aparecer na conciliação?", "options": ["Entrada e saída ambas zeradas", "Margem bruta negativa automaticamente", "Ativo total sempre maior que passivo", "Entrada contábil menor e saída contábil maior"], "answer": 3, "explanation": "O erro desloca o valor da entrada para a saída."}, {"difficulty": "difícil", "q": "Receita de 2020 de R$ 1.179.227 comparada com 2019 de R$ 1.359.985 gera análise horizontal aproximada de:", "options": ["100,00%", "86,71%", "115,32%", "13,29%"], "answer": 1, "explanation": "AH = 1.179.227 / 1.359.985 x 100 = 86,71%, indicando redução em relação à base."}, {"difficulty": "difícil", "q": "Caixa de R$ 114.635 em ativo total de R$ 1.995.237 representa AV aproximada de:", "options": ["5,75%", "24,73%", "184,41%", "65,12%"], "answer": 0, "explanation": "AV = 114.635 / 1.995.237 = 5,75%."}, {"difficulty": "difícil", "q": "Com Ativo Circulante de R$ 300.000 e Passivo Circulante de R$ 200.000, a liquidez corrente é:", "options": ["0,50", "0,67", "2,00", "1,50"], "answer": 3, "explanation": "Liquidez corrente = 300.000 / 200.000 = 1,5."}, {"difficulty": "difícil", "q": "Com AC de R$ 300.000, estoques de R$ 80.000 e PC de R$ 200.000, a liquidez seca é:", "options": ["1,10", "1,50", "2,20", "0,40"], "answer": 0, "explanation": "Liquidez seca = (300.000 - 80.000) / 200.000 = 1,10."}, {"difficulty": "difícil", "q": "Com lucro líquido de R$ 45.000 e receita de R$ 300.000, a margem líquida é:", "options": ["15%", "85%", "6,67%", "30%"], "answer": 0, "explanation": "Margem líquida = 45.000 / 300.000 = 15%."}, {"difficulty": "difícil", "q": "Com lucro líquido de R$ 80.000 e patrimônio líquido médio de R$ 400.000, o ROE é:", "options": ["25%", "80%", "20%", "5%"], "answer": 2, "explanation": "ROE = 80.000 / 400.000 = 20%."}, {"difficulty": "difícil", "q": "Uma margem líquida negativa indica:", "options": ["Lucro bruto máximo", "Prejuízo líquido em relação à receita", "Liquidez corrente superior a 1", "Ausência de passivos"], "answer": 1, "explanation": "Margem líquida negativa significa que o resultado final foi prejuízo."}, {"difficulty": "difícil", "q": "Com PC de R$ 90.000 e PNC de R$ 60.000, a composição do endividamento é:", "options": ["66,67%", "60%", "40%", "150%"], "answer": 1, "explanation": "Composição = 90.000 / (90.000 + 60.000) = 60%."}, {"difficulty": "difícil", "q": "Com capitais de terceiros de R$ 300.000 e patrimônio líquido de R$ 200.000, a participação de capitais de terceiros é:", "options": ["2,00", "1,50", "0,67", "0,50"], "answer": 1, "explanation": "PCT = 300.000 / 200.000 = 1,50."}, {"difficulty": "difícil", "q": "Com AC de R$ 200.000, RLP de R$ 50.000, PC de R$ 150.000 e PNC de R$ 100.000, a liquidez geral é:", "options": ["1,00", "1,33", "0,80", "2,50"], "answer": 0, "explanation": "Liquidez geral = (200.000 + 50.000) / (150.000 + 100.000) = 1,00."}, {"difficulty": "difícil", "q": "Uma despesa administrativa de R$ 75.000 em receita de R$ 500.000 representa, na análise vertical da DRE:", "options": ["15%", "25%", "6,67%", "75%"], "answer": 0, "explanation": "AV = 75.000 / 500.000 = 15%."}]};
+    const LESSON_META = {
+      aula4: { title: 'Aula 4', focus: 'Estoques, mercadorias, tributos, depreciação e apuração do resultado' },
+      aula5: { title: 'Aula 5', focus: 'Regimes tributários, lucro presumido, lucro real, Simples Nacional e SPED' },
+      aula6: { title: 'Aula 6', focus: 'Conciliação contábil, análise vertical/horizontal e indicadores financeiros' }
+    };
+    const STORAGE_KEY = 'ms_contabilidade_quiz_v1';
+    const letters = ['A', 'B', 'C', 'D'];
+    let activeLesson = localStorage.getItem('ms_active_lesson') || 'aula4';
+    let state = loadState();
+
+    function loadState() {
+      const fallback = { answers: { aula4: {}, aula5: {}, aula6: {} }, showResult: { aula4: false, aula5: false, aula6: false } };
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || fallback; } catch { return fallback; }
+    }
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function answeredCount(lesson) { return Object.keys(state.answers[lesson] || {}).length; }
+    function scoreLesson(lesson) {
+      const questions = QUIZZES[lesson];
+      let total = 0, medium = 0, hard = 0, mediumTotal = 0, hardTotal = 0;
+      questions.forEach((q, i) => {
+        if (q.difficulty === 'médio') mediumTotal++; else hardTotal++;
+        if (Number(state.answers[lesson][i]) === q.answer) {
+          total++;
+          if (q.difficulty === 'médio') medium++; else hard++;
+        }
+      });
+      return { total, medium, hard, mediumTotal, hardTotal, percent: Math.round((total / questions.length) * 100) };
+    }
+    function renderTabs() {
+      const tabs = document.getElementById('tabs');
+      tabs.innerHTML = Object.keys(QUIZZES).map(key => {
+        const done = answeredCount(key);
+        return `<button class="tab ${key === activeLesson ? 'active' : ''}" data-tab="${key}">${LESSON_META[key].title} <span>(${done}/50)</span></button>`;
+      }).join('');
+      tabs.querySelectorAll('[data-tab]').forEach(btn => btn.addEventListener('click', () => {
+        activeLesson = btn.dataset.tab;
+        localStorage.setItem('ms_active_lesson', activeLesson);
+        render();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }));
+    }
+    function render() { renderTabs(); renderQuiz(activeLesson); }
+
+    function renderQuiz(lesson) {
+      const questions = QUIZZES[lesson];
+      const done = answeredCount(lesson);
+      const finished = done === questions.length;
+      const progress = Math.round((done / questions.length) * 100);
+      const score = scoreLesson(lesson);
+      if (finished) state.showResult[lesson] = true;
+      saveState();
+      const area = document.getElementById('quizArea');
+      area.innerHTML = `
+        <div class="lesson-head">
+          <div>
+            <h2>${LESSON_META[lesson].title}</h2>
+            <p class="muted">${LESSON_META[lesson].focus}</p>
+            <div class="pillrow">
+              <span class="pill">25 questões médias</span>
+              <span class="pill">25 questões difíceis</span>
+              <span class="pill">4 alternativas</span>
+            </div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-top"><span>Respondidas</span><strong>${done}/50</strong></div>
+            <div class="bar"><span style="width:${progress}%"></span></div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="primary" id="finishBtn" ${finished ? '' : 'disabled'}>Ver resultado</button>
+          <button class="ghost" id="clearBtn">Limpar respostas desta aula</button>
+        </div>
+        ${state.showResult[lesson] && finished ? resultTemplate(lesson, score) : ''}
+        <section class="questions">${questions.map((q, i) => questionTemplate(lesson, q, i)).join('')}</section>
+      `;
+      document.getElementById('finishBtn').addEventListener('click', () => {
+        if (answeredCount(lesson) !== questions.length) return;
+        state.showResult[lesson] = true; saveState(); renderQuiz(lesson);
+        setTimeout(() => document.querySelector('.result')?.scrollIntoView({behavior:'smooth', block:'start'}), 50);
+      });
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        if (!confirm('Limpar todas as respostas desta aula?')) return;
+        state.answers[lesson] = {}; state.showResult[lesson] = false; saveState(); render();
+      });
+      area.querySelectorAll('[data-answer]').forEach(btn => btn.addEventListener('click', () => selectAnswer(btn)));
+    }
+
+    function questionTemplate(lesson, q, i) {
+      const selected = state.answers[lesson]?.[i];
+      const badgeClass = q.difficulty === 'médio' ? 'medium' : '';
+      return `<article class="question" id="q-${lesson}-${i}">
+        <div class="qtop"><p class="qtitle">${i + 1}. ${escapeHtml(q.q)}</p><span class="badge ${badgeClass}">${q.difficulty}</span></div>
+        <div class="answers">
+          ${q.options.map((opt, idx) => `<button class="answer ${String(selected) === String(idx) ? 'selected' : ''}" data-answer="${idx}" data-lesson="${lesson}" data-index="${i}"><span class="letter">${letters[idx]}</span><span>${escapeHtml(opt)}</span></button>`).join('')}
+        </div>
+      </article>`;
+    }
+
+    function resultTemplate(lesson, score) {
+      const questions = QUIZZES[lesson];
+      const wrongs = questions.map((q, i) => ({ q, i, chosen: state.answers[lesson][i] })).filter(item => Number(item.chosen) !== item.q.answer);
+      const comment = score.percent >= 80 ? 'Excelente desempenho.' : score.percent >= 60 ? 'Bom resultado, revise os erros abaixo.' : 'Revise com atenção os temas com erro e tente novamente.';
+      return `<section class="result">
+        <p class="score">${score.total}/50 · ${score.percent}%</p>
+        <p><strong>${comment}</strong></p>
+        <div class="pillrow">
+          <span class="pill">Médias: ${score.medium}/${score.mediumTotal}</span>
+          <span class="pill">Difíceis: ${score.hard}/${score.hardTotal}</span>
+          <span class="pill">Erros: ${wrongs.length}</span>
+        </div>
+        <div class="review">
+          ${wrongs.length === 0 ? '<div class="review-item ok"><strong>Você acertou tudo nesta aula.</strong></div>' : wrongs.map(item => `<div class="review-item"><strong>Questão ${item.i + 1}</strong><br><span class="muted">Sua resposta: ${escapeHtml(item.q.options[item.chosen])}</span><br>Correta: <strong>${escapeHtml(item.q.options[item.q.answer])}</strong><br><span class="muted">${escapeHtml(item.q.explanation)}</span></div>`).join('')}
+        </div>
+      </section>`;
+    }
+
+    function selectAnswer(btn) {
+      const lesson = btn.dataset.lesson;
+      const index = btn.dataset.index;
+      const value = Number(btn.dataset.answer);
+      state.answers[lesson][index] = value;
+      if (answeredCount(lesson) < QUIZZES[lesson].length) state.showResult[lesson] = false;
+      if (answeredCount(lesson) === QUIZZES[lesson].length) state.showResult[lesson] = true;
+      saveState();
+      const y = window.scrollY;
+      render();
+      window.scrollTo(0, y);
+      if (answeredCount(lesson) === QUIZZES[lesson].length) {
+        setTimeout(() => document.querySelector('.result')?.scrollIntoView({behavior:'smooth', block:'start'}), 100);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[ch]));
+    }
+
+    // PWA: instalação e service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.warn));
+    }
+    const installBtn = document.getElementById('installBtn');
+    const installHelp = document.getElementById('installHelp');
+    const closeInstallHelp = document.getElementById('closeInstallHelp');
+    let deferredPrompt = null;
+    function isStandalone() {
+      return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || localStorage.getItem('ms_pwa_installed') === '1';
+    }
+    function updateInstallButton() { installBtn.hidden = isStandalone(); }
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      deferredPrompt = event;
+      updateInstallButton();
+    });
+    installBtn.addEventListener('click', async () => {
+      if (isStandalone()) { updateInstallButton(); return; }
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          localStorage.setItem('ms_pwa_installed', '1');
+          updateInstallButton();
+        }
+        deferredPrompt = null;
+      } else {
+        installHelp.classList.add('show');
+      }
+    });
+    window.addEventListener('appinstalled', () => {
+      localStorage.setItem('ms_pwa_installed', '1');
+      updateInstallButton();
+    });
+    closeInstallHelp.addEventListener('click', () => installHelp.classList.remove('show'));
+    installHelp.addEventListener('click', (e) => { if (e.target === installHelp) installHelp.classList.remove('show'); });
+    window.matchMedia('(display-mode: standalone)').addEventListener?.('change', updateInstallButton);
+    updateInstallButton();
+    render();
+  </script>
+</body>
+</html>
