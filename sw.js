@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ms-contabilidade-v3';
+const CACHE_NAME = 'ms-contabilidade-v4';
 const ASSETS = [
   './',
   './index.html',
